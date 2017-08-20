@@ -27,7 +27,7 @@ app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 
 require('./routes/routes.js')(app);
 
-const server = app.listen(5000, () => {
+const server = app.listen(process.env.PORT || 5000, () => {
   const host = server.address().address;
   const port = server.address().port;
 
