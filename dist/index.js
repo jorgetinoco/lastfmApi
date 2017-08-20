@@ -39,7 +39,7 @@ app.use('/api-docs', _swaggerUiExpress2.default.serve, _swaggerUiExpress2.defaul
 
 require('./routes/routes.js')(app);
 
-var server = app.listen(8080, function () {
+var server = app.listen(5000, function () {
   var host = server.address().address;
   var port = server.address().port;
 
