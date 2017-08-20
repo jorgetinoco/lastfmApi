@@ -40,8 +40,7 @@ app.use('/api-docs', _swaggerUiExpress2.default.serve, _swaggerUiExpress2.defaul
 require('./routes/routes.js')(app);
 
 var server = app.listen(process.env.PORT || 5000, function () {
-  var host = server.address().address;
   var port = server.address().port;
 
-  console.log('Example app listening at http://' + host + ':' + port);
+  console.log('LastfmApi listening at port ' + port);
 });
