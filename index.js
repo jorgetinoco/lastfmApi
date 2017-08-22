@@ -1,10 +1,13 @@
 import express from 'express';
 import swagger from 'swagger-jsdoc';
 import swaggerUi from 'swagger-ui-express';
+import cors from 'cors';
 
 require('dotenv').config({ path: `${__dirname}/config/.env` });
 
 const app = express();
+
+app.use(cors());
 
 const swaggerDefinition = {
   info: {
