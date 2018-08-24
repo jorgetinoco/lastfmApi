@@ -219,7 +219,7 @@ module.exports = function routes(app) {
 
   /**
    * @swagger
-   *  /song/{songName}/Artist/{artistName}:
+   *  /song/{songName}/artist/{artistName}:
    *    parameters:
    *      - songName:
    *        name: songName
