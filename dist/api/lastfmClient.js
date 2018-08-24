@@ -21,7 +21,8 @@ function lastfmClient() {
       getTopTracks: 'user.gettoptracks&' // user, period, limit, page, key
     },
     artist: {
-      getInfo: 'artist.getinfo&' // artist, mbid, lang, autocorrect, username, key
+      getInfo: 'artist.getinfo&', // artist, mbid, lang, autocorrect, username, key
+      topAlbums: 'artist.gettopalbums&' // artist, key
     }
   };
 
@@ -75,11 +76,18 @@ function lastfmClient() {
     return callURI(autoCorrectParams, 'artist', 'getInfo');
   }
 
+  function artistGetTopAlbums(params) {
+    var autoCorrectParams = params;
+    autoCorrectParams.autocorrect = 1;
+    return callURI(autoCorrectParams, 'artist', 'topAlbums');
+  }
+
   return {
     trackGetInfo: trackGetInfo,
     trackSearch: trackSearch,
     userGetTopTracks: userGetTopTracks,
-    artistGetInfo: artistGetInfo
+    artistGetInfo: artistGetInfo,
+    artistGetTopAlbums: artistGetTopAlbums
   };
 }
 

@@ -81,7 +81,78 @@ module.exports = function routes(app) {
 
   /**
    * @swagger
-   *  /song:
+   *  /artist/{artistName}/albums:
+   *    parameters:
+   *      - artistName:
+   *        name: artistName
+   *        description: artist name to get top 5 albums
+   *        in: path
+   *        required: true
+   *        type: string
+   *    get:
+   *      tags:
+   *        - Artist
+   *      description: Return artist's top 5 albums
+   *      produces:
+   *        - application/json
+   *      responses:
+   *        200:
+   *          description: Artist top 5 albums
+   *          schema:
+   *            type: array
+   *            items:
+   *              type: object
+   *              properties:
+   *                album:
+   *                  type: string
+   *                artist:
+   *                  type: string
+   *                playcount:
+   *                  type: number
+   *                images:
+   *                  type: array
+   *                  items:
+   *                    type: object
+   *                    properties:
+   *                      text:
+   *                        type: string
+   *                      size:
+   *                        type: string
+   *        default:
+   *          description: Unexpected error
+   *          schema:
+   *            type: object
+   *            properties:
+   *              error:
+   *                type: string
+   *              message:
+   *                type: string
+   *              links:
+   *                type: array
+   *                items:
+   *                  type: string
+   */
+  app.get('/artist/:artistName/albums', (req, res) => {
+    lastfmClient().artistGetTopAlbums({ artist: req.params.artistName, limit: 5 })
+    .then((response) => {
+      const albums = response.topalbums.album;
+      console.log(albums);
+      const returnJson = albums.map((album) => {
+        const newAlbum = {
+          album: album.name,
+          playcount: album.playcount,
+          artist: album.artist.name,
+          images: album.image,
+        };
+        return newAlbum;
+      });
+      return res.json(returnJson);
+    });
+  });
+
+  /**
+   * @swagger
+   *  /songs:
    *    get:
    *      tags:
    *        - Song
@@ -128,7 +199,7 @@ module.exports = function routes(app) {
    *                items:
    *                  type: string
    */
-  app.get('/song', (req, res) => {
+  app.get('/songs', (req, res) => {
     lastfmClient().userGetTopTracks({ user: 'jtinoco22', period: 'overall' })
     .then((json) => {
       const response = json.toptracks.track;
