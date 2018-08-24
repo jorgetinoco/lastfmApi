@@ -1,16 +1,9 @@
 import lastfmClient from '../api/lastfmClient';
 
 module.exports = function routes(app) {
-  app.get('/LastSongs', (req, res) => {
-    lastfmClient().userGetTopTracks({ user: 'jtinoco22', period: 'overall' })
-    .then((json) => {
-      res.send({ tracks: json.toptracks.track });
-    });
-  });
-
   /**
    * @swagger
-   *  /Artist/{artistName}:
+   *  /artist/{artistName}:
    *    parameters:
    *      - artistName:
    *        name: artistName
@@ -42,9 +35,13 @@ module.exports = function routes(app) {
    *                  onTour:
    *                    type: string
    *                  similarArtist:
-   *                    type: string
+   *                    type: array
+   *                    items:
+   *                      type: string
    *                  tags:
-   *                    type: string
+   *                    type: array
+   *                    items:
+   *                      type: string
    *                  bio:
    *                    type: string
    *        default:
@@ -61,7 +58,7 @@ module.exports = function routes(app) {
    *                items:
    *                  type: string
    */
-  app.get('/Artist/:artistName', (req, res) => {
+  app.get('/artist/:artistName', (req, res) => {
     lastfmClient().artistGetInfo({ artist: req.params.artistName })
     .then((response) => {
       if (response.error) {
@@ -74,8 +71,8 @@ module.exports = function routes(app) {
       artist.url = responseArtist.url;
       artist.image = responseArtist.image.find(img => img.size === 'large')['#text'] || '';
       artist.onTour = responseArtist.ontour;
-      artist.similarArtist = responseArtist.similar.artist.map(simArtist => simArtist.name).join(' ,');
-      artist.tags = responseArtist.tags.tag.map(tag => tag.name).join(', ');
+      artist.similarArtist = responseArtist.similar.artist.map(simArtist => simArtist.name);
+      artist.tags = responseArtist.tags.tag.map(tag => tag.name);
       artist.bio = responseArtist.bio ? responseArtist.bio.summary : '';
       returnJson.artist = artist;
       return res.json(returnJson);
@@ -84,7 +81,73 @@ module.exports = function routes(app) {
 
   /**
    * @swagger
-   *  /Song/{songName}:
+   *  /song:
+   *    get:
+   *      tags:
+   *        - Song
+   *      description: Returns the top 50 songs
+   *      produces:
+   *        - application/json
+   *      responses:
+   *        200:
+   *          description: List of top 50 songs
+   *          schema:
+   *            type: object
+   *            properties:
+   *              track:
+   *                type: array
+   *                items:
+   *                  type: object
+   *                  properties:
+   *                    name:
+   *                      type: string
+   *                    playcount:
+   *                      type: string
+   *                    artist:
+   *                      type: string
+   *                    image:
+   *                      type: array
+   *                      items:
+   *                        type: object
+   *                        properties:
+   *                          text:
+   *                            type: string
+   *                          size:
+   *                            type: string
+   *        default:
+   *          description: Unexpected error
+   *          schema:
+   *            type: object
+   *            properties:
+   *              error:
+   *                type: string
+   *              message:
+   *                type: string
+   *              links:
+   *                type: array
+   *                items:
+   *                  type: string
+   */
+  app.get('/song', (req, res) => {
+    lastfmClient().userGetTopTracks({ user: 'jtinoco22', period: 'overall' })
+    .then((json) => {
+      const response = json.toptracks.track;
+      const tracks = response.map((track) => {
+        const newTrack = {};
+        newTrack.name = track.name;
+        newTrack.playcount = track.playcount;
+        newTrack.url = track.url;
+        newTrack.artist = track.artist.name;
+        newTrack.image = track.image;
+        return newTrack;
+      });
+      res.send({ tracks });
+    });
+  });
+
+  /**
+   * @swagger
+   *  /song/{songName}:
    *    parameters:
    *      - songName:
    *        name: songName
@@ -133,7 +196,7 @@ module.exports = function routes(app) {
    *                items:
    *                  type: string
    */
-  app.get('/Song/:songName', (req, res) => {
+  app.get('/song/:songName', (req, res) => {
     lastfmClient().trackSearch({ track: req.params.songName, limit: 10 })
     .then((response) => {
       if (response.error) {
@@ -156,7 +219,7 @@ module.exports = function routes(app) {
 
   /**
    * @swagger
-   *  /Song/{songName}/Artist/{artistName}:
+   *  /song/{songName}/Artist/{artistName}:
    *    parameters:
    *      - songName:
    *        name: songName
@@ -201,7 +264,9 @@ module.exports = function routes(app) {
    *                      url:
    *                        type: string
    *                  tags:
-   *                    type: string
+   *                    type: array
+   *                    items:
+   *                      type: string
    *                  wiki:
    *                    type: object
    *                    properties:
@@ -225,7 +290,7 @@ module.exports = function routes(app) {
    *                items:
    *                  type: string
    */
-  app.get('/Song/:songName/Artist/:artistName', (req, res) => {
+  app.get('/song/:songName/artist/:artistName', (req, res) => {
     // track.getinfo
     lastfmClient().trackGetInfo({ track: req.params.songName, artist: req.params.artistName })
     .then((response) => {
@@ -241,7 +306,7 @@ module.exports = function routes(app) {
       track.listeners = jsonResponseTrack.listeners;
       delete jsonResponseTrack.artist.mbid;
       track.artist = jsonResponseTrack.artist;
-      track.tags = jsonResponseTrack.toptags.tag.map(tag => tag.name).join(', ');
+      track.tags = jsonResponseTrack.toptags.tag.map(tag => tag.name);
       track.wiki = jsonResponseTrack.wiki || {};
       returnJson.track = track;
       return res.json(returnJson);

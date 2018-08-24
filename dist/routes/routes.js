@@ -7,15 +7,9 @@ var _lastfmClient2 = _interopRequireDefault(_lastfmClient);
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 module.exports = function routes(app) {
-  app.get('/LastSongs', function (req, res) {
-    (0, _lastfmClient2.default)().userGetTopTracks({ user: 'jtinoco22', period: 'overall' }).then(function (json) {
-      res.send({ tracks: json.toptracks.track });
-    });
-  });
-
   /**
    * @swagger
-   *  /Artist/{artistName}:
+   *  /artist/{artistName}:
    *    parameters:
    *      - artistName:
    *        name: artistName
@@ -47,9 +41,13 @@ module.exports = function routes(app) {
    *                  onTour:
    *                    type: string
    *                  similarArtist:
-   *                    type: string
+   *                    type: array
+   *                    items:
+   *                      type: string
    *                  tags:
-   *                    type: string
+   *                    type: array
+   *                    items:
+   *                      type: string
    *                  bio:
    *                    type: string
    *        default:
@@ -66,7 +64,7 @@ module.exports = function routes(app) {
    *                items:
    *                  type: string
    */
-  app.get('/Artist/:artistName', function (req, res) {
+  app.get('/artist/:artistName', function (req, res) {
     (0, _lastfmClient2.default)().artistGetInfo({ artist: req.params.artistName }).then(function (response) {
       if (response.error) {
         return res.json(response);
@@ -82,10 +80,10 @@ module.exports = function routes(app) {
       artist.onTour = responseArtist.ontour;
       artist.similarArtist = responseArtist.similar.artist.map(function (simArtist) {
         return simArtist.name;
-      }).join(' ,');
+      });
       artist.tags = responseArtist.tags.tag.map(function (tag) {
         return tag.name;
-      }).join(', ');
+      });
       artist.bio = responseArtist.bio ? responseArtist.bio.summary : '';
       returnJson.artist = artist;
       return res.json(returnJson);
@@ -94,7 +92,72 @@ module.exports = function routes(app) {
 
   /**
    * @swagger
-   *  /Song/{songName}:
+   *  /song:
+   *    get:
+   *      tags:
+   *        - Song
+   *      description: Returns the top 50 songs
+   *      produces:
+   *        - application/json
+   *      responses:
+   *        200:
+   *          description: List of top 50 songs
+   *          schema:
+   *            type: object
+   *            properties:
+   *              track:
+   *                type: array
+   *                items:
+   *                  type: object
+   *                  properties:
+   *                    name:
+   *                      type: string
+   *                    playcount:
+   *                      type: string
+   *                    artist:
+   *                      type: string
+   *                    image:
+   *                      type: array
+   *                      items:
+   *                        type: object
+   *                        properties:
+   *                          text:
+   *                            type: string
+   *                          size:
+   *                            type: string
+   *        default:
+   *          description: Unexpected error
+   *          schema:
+   *            type: object
+   *            properties:
+   *              error:
+   *                type: string
+   *              message:
+   *                type: string
+   *              links:
+   *                type: array
+   *                items:
+   *                  type: string
+   */
+  app.get('/song', function (req, res) {
+    (0, _lastfmClient2.default)().userGetTopTracks({ user: 'jtinoco22', period: 'overall' }).then(function (json) {
+      var response = json.toptracks.track;
+      var tracks = response.map(function (track) {
+        var newTrack = {};
+        newTrack.name = track.name;
+        newTrack.playcount = track.playcount;
+        newTrack.url = track.url;
+        newTrack.artist = track.artist.name;
+        newTrack.image = track.image;
+        return newTrack;
+      });
+      res.send({ tracks: tracks });
+    });
+  });
+
+  /**
+   * @swagger
+   *  /song/{songName}:
    *    parameters:
    *      - songName:
    *        name: songName
@@ -143,7 +206,7 @@ module.exports = function routes(app) {
    *                items:
    *                  type: string
    */
-  app.get('/Song/:songName', function (req, res) {
+  app.get('/song/:songName', function (req, res) {
     (0, _lastfmClient2.default)().trackSearch({ track: req.params.songName, limit: 10 }).then(function (response) {
       if (response.error) {
         return res.json(response);
@@ -167,7 +230,7 @@ module.exports = function routes(app) {
 
   /**
    * @swagger
-   *  /Song/{songName}/Artist/{artistName}:
+   *  /song/{songName}/Artist/{artistName}:
    *    parameters:
    *      - songName:
    *        name: songName
@@ -212,7 +275,9 @@ module.exports = function routes(app) {
    *                      url:
    *                        type: string
    *                  tags:
-   *                    type: string
+   *                    type: array
+   *                    items:
+   *                      type: string
    *                  wiki:
    *                    type: object
    *                    properties:
@@ -236,7 +301,7 @@ module.exports = function routes(app) {
    *                items:
    *                  type: string
    */
-  app.get('/Song/:songName/Artist/:artistName', function (req, res) {
+  app.get('/song/:songName/artist/:artistName', function (req, res) {
     // track.getinfo
     (0, _lastfmClient2.default)().trackGetInfo({ track: req.params.songName, artist: req.params.artistName }).then(function (response) {
       if (response.error) {
@@ -253,7 +318,7 @@ module.exports = function routes(app) {
       track.artist = jsonResponseTrack.artist;
       track.tags = jsonResponseTrack.toptags.tag.map(function (tag) {
         return tag.name;
-      }).join(', ');
+      });
       track.wiki = jsonResponseTrack.wiki || {};
       returnJson.track = track;
       return res.json(returnJson);
