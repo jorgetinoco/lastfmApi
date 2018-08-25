@@ -9,6 +9,61 @@ function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { de
 module.exports = function routes(app) {
   /**
    * @swagger
+   *  /artists:
+   *    get:
+   *      tags:
+   *        - Artist
+   *      description: Return list of top 20 artists
+   *      produces:
+   *        - application/json
+   *      responses:
+   *        200:
+   *          description: List of top 20 artists
+   *          schema:
+   *            type: array
+   *            items:
+   *              type: object
+   *              properties:
+   *                artist:
+   *                  type: string
+   *                images:
+   *                  type: array
+   *                  items:
+   *                    type: object
+   *                    properties:
+   *                      text:
+   *                        type: string
+   *                      size:
+   *                        type: string
+   *        default:
+   *          description: Unexpected error
+   *          schema:
+   *            type: object
+   *            properties:
+   *              error:
+   *                type: string
+   *              message:
+   *                type: string
+   *              links:
+   *                type: array
+   *                items:
+   *                  type: string
+   */
+  app.get('/artists', function (req, res) {
+    (0, _lastfmClient2.default)().artistList({ user: 'jtinoco22', limit: 20 }).then(function (response) {
+      var jsonResponse = response.artists.artist.map(function (a) {
+        var newArtist = {
+          artist: a.name,
+          images: a.image
+        };
+        return newArtist;
+      });
+      return res.json(jsonResponse);
+    });
+  });
+
+  /**
+   * @swagger
    *  /artist/{artistName}:
    *    parameters:
    *      - artistName:
@@ -146,7 +201,6 @@ module.exports = function routes(app) {
   app.get('/artist/:artistName/albums', function (req, res) {
     (0, _lastfmClient2.default)().artistGetTopAlbums({ artist: req.params.artistName, limit: 5 }).then(function (response) {
       var albums = response.topalbums.album;
-      console.log(albums);
       var returnJson = albums.map(function (album) {
         var newAlbum = {
           album: album.name,

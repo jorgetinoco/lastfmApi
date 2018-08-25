@@ -17,6 +17,9 @@ function lastfmClient() {
       getInfo: 'artist.getinfo&', // artist, mbid, lang, autocorrect, username, key
       topAlbums: 'artist.gettopalbums&', // artist, key
     },
+    library: {
+      getArtists: 'library.getartists&',
+    },
   };
 
   function getParams(params) {
@@ -72,12 +75,17 @@ function lastfmClient() {
     return callURI(autoCorrectParams, 'artist', 'topAlbums');
   }
 
+  function artistList(params) {
+    return callURI(params, 'library', 'getArtists');
+  }
+
   return {
     trackGetInfo,
     trackSearch,
     userGetTopTracks,
     artistGetInfo,
     artistGetTopAlbums,
+    artistList,
   };
 }
 

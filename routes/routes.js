@@ -3,6 +3,62 @@ import lastfmClient from '../api/lastfmClient';
 module.exports = function routes(app) {
   /**
    * @swagger
+   *  /artists:
+   *    get:
+   *      tags:
+   *        - Artist
+   *      description: Return list of top 20 artists
+   *      produces:
+   *        - application/json
+   *      responses:
+   *        200:
+   *          description: List of top 20 artists
+   *          schema:
+   *            type: array
+   *            items:
+   *              type: object
+   *              properties:
+   *                artist:
+   *                  type: string
+   *                images:
+   *                  type: array
+   *                  items:
+   *                    type: object
+   *                    properties:
+   *                      text:
+   *                        type: string
+   *                      size:
+   *                        type: string
+   *        default:
+   *          description: Unexpected error
+   *          schema:
+   *            type: object
+   *            properties:
+   *              error:
+   *                type: string
+   *              message:
+   *                type: string
+   *              links:
+   *                type: array
+   *                items:
+   *                  type: string
+   */
+  app.get('/artists', (req, res) => {
+    lastfmClient().artistList({ user: 'jtinoco22', limit: 20 })
+    .then((response) => {
+      const jsonResponse = response.artists.artist.map((a) => {
+        const newArtist = {
+          artist: a.name,
+          images: a.image,
+        };
+        return newArtist;
+      });
+      return res.json(jsonResponse);
+    });
+  });
+
+  /**
+   * @swagger
    *  /artist/{artistName}:
    *    parameters:
    *      - artistName:
@@ -136,7 +192,6 @@ module.exports = function routes(app) {
     lastfmClient().artistGetTopAlbums({ artist: req.params.artistName, limit: 5 })
     .then((response) => {
       const albums = response.topalbums.album;
-      console.log(albums);
       const returnJson = albums.map((album) => {
         const newAlbum = {
           album: album.name,
