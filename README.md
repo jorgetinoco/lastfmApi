@@ -29,3 +29,11 @@ npm run dev
 ```
 
 That should run the project using hot reloads with `nodemon`, and then you can go to: `<hostname>:<port>/api-docs`
+
+## Why Do You Include The Dist Folder
+
+In order to have an easy deploy to Heroku (a simple `npm start`), I need the compiled version of the project (meaning after babel process it). So I left it there, as the only thing I need to do is:
+
+```bash
+git push heroku master
+```
