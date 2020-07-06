@@ -36,7 +36,7 @@ var swaggerDefinition = {
 
 var options = {
   swaggerDefinition: swaggerDefinition,
-  apis: ['./routes/*.js']
+  apis: ['./routes/swagger-docs.js']
 };
 
 var swaggerSpec = (0, _swaggerJsdoc2.default)(options);
